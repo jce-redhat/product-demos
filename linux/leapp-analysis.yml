@@ -1,0 +1,14 @@
+---
+- name: Run LEAPP pre-upgrade step
+  hosts: '{{ _hosts | default(omit) }}'
+  gather_facts: true
+
+  vars:
+    leapp_upgrade_type: rhui
+
+  tasks:
+    - name: Generate pre-upgrade analysis report
+      ansible.builtin.import_role:
+        name: infra.leapp.analysis
+
+...
