@@ -10,5 +10,6 @@
     - name: Generate pre-upgrade analysis report
       ansible.builtin.import_role:
         name: infra.leapp.analysis
+      become: true
 
 ...
