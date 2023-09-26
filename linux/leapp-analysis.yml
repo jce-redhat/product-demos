@@ -6,10 +6,21 @@
 
   vars:
     leapp_upgrade_type: rhui
+    _report_server: None
 
   tasks:
     - name: Generate pre-upgrade analysis report
+      tags: preupgrade
       ansible.builtin.import_role:
         name: infra.leapp.analysis
+
+    - name: Sync LEAPP report to report server
+      tags: sync-reports
+      ansible.posix.synchronize:
+        src: /var/log/leapp
+        dest: /var/www/html/leapp-reports/{{ inventory_hostname }}
+        mode: pull
+      delegate_to: '{{ _report_server }}'
+      when: _report_server is defined
 
 ...
