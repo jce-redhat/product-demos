@@ -20,6 +20,7 @@
         src: /var/log/leapp
         dest: /var/www/html/leapp-reports/{{ inventory_hostname }}
         mode: pull
+        use_ssh_args: true
       delegate_to: '{{ report_server }}'
       when: report_server is defined
       vars:
