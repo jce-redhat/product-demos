@@ -530,7 +530,7 @@ controller_templates:
           required: true
         - question_name: LEAPP Report Server Name
           type: text
-          variable: _report_host
+          variable: _report_server
           required: true
 
 ...
