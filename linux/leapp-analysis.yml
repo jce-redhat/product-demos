@@ -18,6 +18,7 @@
         state: directory
       delegate_to: localhost
       register: _tempdir
+      become: false
 
     - name: Create per-host report subdirectories
       ansible.builtin.file:
@@ -25,6 +26,7 @@
         state: directory
         mode: 0755
       delegate_to: localhost
+      become: false
 
     - name: Fetch LEAPP report artifacts locally
       ansible.builtin.fetch:
