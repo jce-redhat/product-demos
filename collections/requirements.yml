@@ -14,7 +14,9 @@ collections:
   - name: community.general
     version: 6.6.0
   - name: containers.podman
-  - name: infra.leapp
+  - name: https://github.com/jce-redhat/infra.leapp.git
+    type: git
+    version: rhui
   # windows
   - name: chocolatey.chocolatey
   - name: community.windows
