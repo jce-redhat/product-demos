@@ -10,20 +10,36 @@
 
   tasks:
     - name: Generate pre-upgrade analysis report
-      tags: preupgrade
       ansible.builtin.import_role:
         name: infra.leapp.analysis
 
-    - name: Sync LEAPP report to report server
-      tags: sync-reports
-      ansible.posix.synchronize:
-        src: /var/log/leapp
-        dest: /var/www/html/leapp-reports/{{ inventory_hostname }}
-        mode: pull
-        use_ssh_args: true
-      delegate_to: '{{ report_server }}'
-      when: report_server is defined
-      vars:
-        ansible_ssh_extra_args: '-o ForwardAgent=yes'
+    - name: Create temp directory for reports
+      ansible.builtin.tempfile:
+        state: directory
+      delegate_to: localhost
+      register: _tempdir
+
+    - name: Create per-host report subdirectories
+      ansible.builtin.file:
+        path: '{{ _tempdir.path }}/{{ inventory_hostname }}'
+        state: directory
+        mode: 0755
+      delegate_to: localhost
+
+    - name: Fetch LEAPP report artifacts locally
+      ansible.builtin.fetch:
+        src: '{{ item }}'
+        dest: '{{ _tempdir.path }}/{{ inventory_hostname }}'
+        flat: true
+
+    - name: Debug cmd
+      # noqa no-changed-when
+      ansible.builtin.shell: >-
+        ls -l {{ _tempdir.path }}/*
+      register: _stuff
+
+    - name: Debug
+      ansible.builtin.debug:
+        var: _stuff
 
 ...
