@@ -40,14 +40,10 @@
         - /var/log/leapp/leapp-preupgrade.log
         - /var/log/leapp/answerfile
 
-    - name: Debug cmd
-      # noqa no-changed-when
-      ansible.builtin.shell: >-
-        ls -l {{ _tempdir.path }}/*
-      register: _stuff
-
-    - name: Debug
-      ansible.builtin.debug:
-        var: _stuff
+    - name: Copy LEAPP report artifacts to report server
+      ansible.builtin.copy:
+        src: '{{ _tempdir.path }}/{{ inventory_hostname }}'
+        dest: /var/www/html/leapp-reports/{{ inventory_hostname }}
+        mode: 0755
 
 ...
