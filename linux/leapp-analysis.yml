@@ -31,6 +31,12 @@
         src: '{{ item }}'
         dest: '{{ _tempdir.path }}/{{ inventory_hostname }}'
         flat: true
+      loop:
+        - /var/log/ripu/ripu.log
+        - /var/log/leapp/leapp-report.json
+        - /var/log/leapp/leapp-report.txt
+        - /var/log/leapp/leapp-preupgrade.log
+        - /var/log/leapp/answerfile
 
     - name: Debug cmd
       # noqa no-changed-when
