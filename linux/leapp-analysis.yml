@@ -31,7 +31,7 @@
     - name: Fetch LEAPP report artifacts locally
       ansible.builtin.fetch:
         src: '{{ item }}'
-        dest: '{{ _tempdir.path }}/{{ inventory_hostname }}'
+        dest: '{{ _tempdir.path }}/{{ inventory_hostname }}/'
         flat: true
       loop:
         - /var/log/ripu/ripu.log
