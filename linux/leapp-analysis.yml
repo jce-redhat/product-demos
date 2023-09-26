@@ -43,7 +43,9 @@
     - name: Copy LEAPP report artifacts to report server
       ansible.builtin.copy:
         src: '{{ _tempdir.path }}/{{ inventory_hostname }}'
-        dest: /var/www/html/leapp-reports/{{ inventory_hostname }}
+        dest: /var/www/html/leapp-reports
         mode: 0755
+      delegate_to: '{{ report_server }}'
+      when: report_server is defined
 
 ...
