@@ -487,11 +487,11 @@ controller_templates:
           variable: application
           required: true
 
-  - name: "LINUX / LEAPP Analysis"
+  - name: "LINUX / Create LEAPP report server"
     job_type: run
     inventory: "Demo Inventory"
     project: "Ansible official demo project"
-    playbook: "linux/leapp-analysis.yml"
+    playbook: "linux/leapp-report-server.yml"
     notification_templates_started: Telemetry
     notification_templates_success: Telemetry
     notification_templates_error: Telemetry
@@ -508,11 +508,11 @@ controller_templates:
           variable: _hosts
           required: true
 
-  - name: "LINUX / Create LEAPP report server"
+  - name: "LINUX / Run LEAPP Analysis"
     job_type: run
     inventory: "Demo Inventory"
     project: "Ansible official demo project"
-    playbook: "linux/leapp-report-server.yml"
+    playbook: "linux/leapp-analysis.yml"
     notification_templates_started: Telemetry
     notification_templates_success: Telemetry
     notification_templates_error: Telemetry
