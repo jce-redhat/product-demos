@@ -528,5 +528,9 @@ controller_templates:
           type: text
           variable: _hosts
           required: true
+        - question_name: LEAPP Report Server Name
+          type: text
+          variable: _report_host
+          required: true
 
 ...
