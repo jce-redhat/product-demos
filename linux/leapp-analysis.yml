@@ -22,5 +22,7 @@
         mode: pull
       delegate_to: '{{ report_server }}'
       when: report_server is defined
+      vars:
+        ansible_ssh_extra_args: '-o ForwardAgent'
 
 ...
