@@ -5,7 +5,9 @@
   become: true
 
   vars:
-    leapp_upgrade_type: rhui
+    # leapp_upgrade_type: rhui
+    leapp_repos_enabled:
+      - rhel-7-server-rhui-extras-rpms
     report_server: '{{ _report_server | default(omit) }}'
 
   tasks:
