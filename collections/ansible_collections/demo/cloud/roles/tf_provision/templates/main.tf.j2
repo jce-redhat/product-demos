@@ -7,12 +7,12 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "{{ demo_terraform_s3_bucket }}"
-    region = "{{ demo_terraform_aws_region }}"
+    bucket = "{{ tf_provision_s3_bucket }}"
+    region = "{{ tf_provision_aws_region }}"
     key    = "product-demos.tfstate"
   }
 }
 
 provider "aws" {
-  region  = "{{ demo_terraform_aws_region }}"
+  region  = "{{ tf_provision_aws_region }}"
 }
