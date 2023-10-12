@@ -1,0 +1,55 @@
+variable "rhel-count" {
+  default = "{{ rhel_count }}"
+}
+
+data "aws_ami" "rhel8_7" {
+  most_recent = true
+  owners      = ["309956199498"]
+  filter {
+    name   = "name"
+    values = ["RHEL-8.7*Hourly*"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "rhel" {
+  count = "${var.rhel-count}"
+  ami                    = data.aws_ami.rhel8_7.id
+  instance_type          = "{{ rhel_instance_type }}"
+  key_name               = "{{ aws_key }}"
+  vpc_security_group_ids = ["${aws_security_group.vpc-allow-all.id}"]
+  subnet_id              = "${aws_subnet.{{ workspace }}-subnet.id}"
+  depends_on = [aws_internet_gateway.{{ workspace }}-gateway]
+  root_block_device {
+    volume_size = 40
+    volume_type = "gp3"
+    encrypted = false
+  }
+
+  tags = {
+    Role      = "RHEL"
+    Workspace = "${terraform.workspace}"
+    Name = "${terraform.workspace}-RHEL-${count.index}"
+    env	= "{{ ec2_env }}"
+    type = "rhel"
+  }
+}
+
+resource "aws_eip" "rhel" {
+  count = "${var.rhel-count}"
+  instance = "${aws_instance.rhel[count.index].id}"
+  vpc      = true
+  network_interface = "${aws_vpc.{{ workspace }}.id}"
+  tags = {
+    Workspace = "${terraform.workspace}"
+    Name = "${terraform.workspace}-RHEL-${count.index}"
+    env	= "{{ ec2_env }}"
+  }
+}
+
+output "rhel" {
+  value = "${aws_eip.rhel[*].public_ip}"
+}

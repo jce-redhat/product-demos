@@ -1,0 +1,82 @@
+variable "windows-count" {
+  default = "{{ windows_count }}"
+}
+
+data "aws_ami" "win2022" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["*Windows_Server-2022-English-Full-Base*"]
+  }
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_instance" "win" {
+  count = "${var.windows-count}"
+  ami                    = data.aws_ami.win2022.id
+  instance_type          = "{{ win_instance_type }}"
+  key_name               = "{{ aws_key }}"
+  vpc_security_group_ids = ["${aws_security_group.vpc-allow-all.id}"]
+  subnet_id              = "${aws_subnet.{{ workspace }}-subnet.id}"
+  depends_on = [aws_internet_gateway.{{ workspace }}-gateway]
+
+  tags = {
+    Role      = "WIN"
+    Workspace = "${terraform.workspace}"
+    Name = "${terraform.workspace}-win-${count.index}"
+    env	= "{{ ec2_env }}"
+    type = "windows"
+  }
+  user_data = <<EOF
+  <powershell>
+  # Disable .Net Optimization Service
+  Get-ScheduledTask *ngen* | Disable-ScheduledTask
+
+  # Disable Windows Auto Updates
+  # https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/troubleshooting-windows-instances.html#high-cpu-issue
+  reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update" /v AUOptions /t REG_DWORD /d 1 /f
+  net stop wuauserv
+  net start wuauserv
+
+  # Remove policies stopping us from enabling WinRM
+  reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" /v AllowBasic /f
+  reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" /v AllowUnencryptedTraffic /f
+  reg delete "HKLM\SOFTWARE\Policies\Microsoft\Windows\WinRM\Service" /v DisableRunAs /f
+
+  # Disable Windows Defender Monitoring
+  Set-MpPreference -DisableRealtimeMonitoring $true
+
+  # TODO: host a replacement for this script that was helpfully taken down but not dereferenced.
+  # Enable WinRM
+  # Invoke-WebRequest -Uri https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1 -OutFile C:\ConfigureRemotingForAnsible.ps1
+  # C:\ConfigureRemotingForAnsible.ps1 -ForceNewSSLCert -EnableCredSSP
+
+  Rename-Computer -NewName ${terraform.workspace}-win-${count.index} -Force -Restart
+
+  # stage service account
+  net user {{ service_account_username }} {{ service_account_password }} /add
+  net localgroup administrators {{ service_account_username }} /add
+
+  </powershell>
+  EOF
+}
+
+resource "aws_eip" "win" {
+  count = "${var.windows-count}"
+  instance = "${aws_instance.win[count.index].id}"
+  vpc      = true
+  network_interface = "${aws_vpc.{{ workspace }}.id}"
+  tags = {
+    Workspace = "${terraform.workspace}"
+    Name = "${terraform.workspace}-win-${count.index}"
+    env	= "{{ ec2_env }}"
+  }
+}
+
+output "win" {
+  value = "${aws_eip.win[*].public_ip}"
+}

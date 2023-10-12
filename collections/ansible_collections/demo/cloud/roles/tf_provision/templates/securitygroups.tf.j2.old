@@ -1,0 +1,25 @@
+resource "aws_security_group" "vpc-allow-all" {
+  name        = "vpc-allow-all"
+  description = "The nuclear option"
+  vpc_id = "${aws_vpc.{{ workspace }}.id}"
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Workspace = "${terraform.workspace}"
+    env	= "{{ ec2_env }}"
+  }
+}

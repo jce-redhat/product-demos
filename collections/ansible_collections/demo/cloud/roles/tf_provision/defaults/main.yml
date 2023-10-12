@@ -1,0 +1,23 @@
+---
+tf_provision_aws_region: "us-east-2"
+tf_provision_aws_vpc_cidr: "10.0.0.0/16"
+tf_provision_aws_key: "my-key"
+tf_provision_teardown: false
+tf_provision_s3_bucket: "your-s3-bucket"
+
+# used as a filter for our inventory plugin
+ec2_env: "your_env"
+
+tf_provision_supported_os:
+  - rhel
+  - windows
+
+# rhel specific vars
+tf_provision_rhel_count: 1
+tf_provision_rhel_instance_type: "t3a.medium"
+
+# win specific vars
+tf_provision_windows_count: 0
+tf_provision_windows_instance_type: "t3a.large"
+
+...

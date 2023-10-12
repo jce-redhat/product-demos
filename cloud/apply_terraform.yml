@@ -1,0 +1,13 @@
+---
+- name: Apply terraform plan
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Run tf_provision role
+      ansible.builtin.include_role:
+        name: demo.cloud.tf_provision
+      vars:
+        tf_provision_aws_region: '{{ apply_terraform_aws_region }}'
+
+...

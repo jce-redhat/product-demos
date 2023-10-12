@@ -1,0 +1,17 @@
+---
+- name: Build terraform infra
+  cloud.terraform.terraform:
+    project_path: '{{ role_path }}/terraform'
+    state: present
+    force_init: true
+    workspace: "{{ workspace }}"
+  register: deploy_output
+
+- name: Display provisioner output
+  ansible.builtin.debug:
+    msg: "{{ deploy_output }}"
+
+- name: Set_stats for provisioner output
+  ansible.builtin.set_stats:
+    data:
+      terraform_deploy_output: "{{ deploy_output }}"

@@ -1,0 +1,7 @@
+---
+- name: Teardown terraform infra
+  cloud.terraform.terraform:
+    project_path: '{{ role_path }}/terraform'
+    state: absent
+    workspace: "{{ workspace }}"
+    force_init: true

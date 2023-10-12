@@ -1,0 +1,42 @@
+resource "aws_subnet" "{{ workspace }}-subnet" {
+  vpc_id = "${aws_vpc.{{ workspace }}.id}"
+  cidr_block = "{{ cidr_block }}"
+  availability_zone = "${var.region}a"
+}
+
+resource "aws_internet_gateway" "{{ workspace }}-gateway" {
+  vpc_id = "${aws_vpc.{{ workspace }}.id}"
+
+  tags = {
+    Name = "{{ workspace }}-gateway"
+  }
+}
+
+resource "aws_route_table" "{{ workspace }}-routes" {
+  vpc_id = "${aws_vpc.{{ workspace }}.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.{{ workspace }}-gateway.id
+  }
+
+  tags = {
+    Name = "{{ workspace }}-routes"
+  }
+
+}
+
+resource "aws_main_route_table_association" "{{ workspace }}-route-association" {
+  vpc_id = "${aws_vpc.{{ workspace }}.id}"
+  route_table_id = aws_route_table.{{ workspace }}-routes.id
+}
+
+resource "aws_vpc" "{{ workspace }}" {
+  cidr_block       = "{{ cidr_block }}"
+  instance_tenancy = "default"
+  enable_dns_hostnames = "true"
+  tags = {
+    Name = "{{ workspace }}"
+    env	= "{{ ec2_env }}"
+  }
+}

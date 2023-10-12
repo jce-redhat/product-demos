@@ -1,0 +1,18 @@
+---
+- name: Create .tf files from template
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ role_path }}/terraform/{{ (item | basename | splitext)[0] }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ role_path }}/templates/*.j2"
+  tags:
+    - template
+
+# - ansible.builtin.include_tasks: "provision.yml"
+#   when: not teardown
+
+# - ansible.builtin.include_tasks: "teardown.yml"
+#   when: teardown | bool
+
+...
