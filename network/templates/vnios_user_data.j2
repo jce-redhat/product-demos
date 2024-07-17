@@ -1,0 +1,4 @@
+#infoblox-config
+remote_console_enabled: yes
+default_admin_password: '{{ lookup("env", "INFOBLOX_PASSWORD") | default("CHANGEME") }}'
+temp_license: nios IB-V825 dns dhcp enterprise
