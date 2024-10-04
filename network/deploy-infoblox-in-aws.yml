@@ -1,0 +1,118 @@
+---
+- name: Deploy Infoblox virtual device in AWS
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    vnios_aws_region: us-west-2
+    vnios_ami_owner_alias: aws-marketplace
+    vnios_ami_name_filter: Infoblox NIOS 8.6.4-*
+    vnios_ami_architecture: x86_64
+    vnios_sg_name: Infoblox vNIOS
+    vnios_instance_name: infoblox-demo
+    vnios_instance_type: m5.large
+    vnios_instance_owner: Ansible Product Demos User
+    vnios_keypair_name: product_demos_infoblox_key
+
+  tasks:
+    - name: Determine subnet for deployment
+      when: vnios_aws_subnet is not defined
+      block:
+        - name: Get list of subnets in the default VPC
+          amazon.aws.ec2_vpc_subnet_info:
+            region: '{{ vnios_aws_region }}'
+          register: _vpc_subnets
+
+        - name: Save subnet id
+          ansible.builtin.set_fact:
+            _subnet_id: '{{ _vpc_subnets.subnets | sort(attribute="availability_zone") | map(attribute="id") | first }}'
+
+    - name: Find Infoblox AMIs
+      amazon.aws.ec2_ami_info:
+        region: '{{ vnios_aws_region }}'
+        owners: '{{ vnios_ami_owner_alias }}'
+        filters:
+          name: '{{ vnios_ami_name_filter }}'
+          architecture: '{{ vnios_ami_architecture }}'
+      register: _ami_info
+
+    - name: Get most recent AMI ID
+      ansible.builtin.set_fact:
+        _ami_id: '{{ _ami_info.images | sort(attribute="creation_date") | map(attribute="image_id") | last }}'
+
+    - name: Create vNIOS security group
+      amazon.aws.ec2_security_group:
+        state: present
+        name: '{{ vnios_sg_name }}'
+        region: '{{ vnios_aws_region }}'
+        description: Rules for {{ vnios_sg_name }}
+        rules:
+          - proto: tcp
+            ports:
+              - 22  # SSH
+              - 53  # DNS
+              - 443  # HTTPS
+              - 8787  # Infoblox API Proxy
+            cidr_ip: 0.0.0.0/0
+          - proto: udp
+            ports:
+              - 53  # DNS
+              - 1194  # NIOS Grid
+              - 2114  # NIOS Grid
+            cidr_ip: 0.0.0.0/0
+
+    - name: Create ENIs for Infoblox MGMT and LAN1 interfaces
+      amazon.aws.ec2_eni:
+        name: '{{ item }}'
+        region: "{{ vnios_aws_region }}"
+        subnet_id: '{{ _subnet_id }}'
+        security_groups:
+          - "{{ vnios_sg_name }}"
+        state: present
+      loop:
+        - MGMT
+        - LAN1
+      register: _eni
+
+    - name: Save ENI IDs
+      ansible.builtin.set_fact:
+        _eni_ids: '{{ _eni.results | map(attribute="interface") | map(attribute="id") }}'
+
+    - name: Create Infoblox instance
+      amazon.aws.ec2_instance:
+        name: "{{ vnios_instance_name }}"
+        state: running
+        network:
+          assign_public_ip: false
+          delete_on_termination: true
+          interfaces: '{{ _eni_ids }}'
+        key_name: "{{ vnios_keypair_name }}"
+        instance_type: "{{ vnios_instance_type }}"
+        image_id: "{{ _ami_id }}"
+        region: "{{ vnios_aws_region }}"
+        tags:
+          Name: "{{ vnios_instance_name }}"
+          owner: "{{ vnios_instance_owner }}"
+        vpc_subnet_id: "{{ _subnet_id }}"
+        user_data: "{{ lookup('template', 'templates/vnios_user_data.j2') }}"
+      register: _vnios_instance
+
+    - name: Set delete-on-terminate for ENIs
+      amazon.aws.ec2_eni:
+        eni_id: '{{ item }}'
+        region: "{{ vnios_aws_region }}"
+        delete_on_termination: true
+      loop: '{{ _eni_ids }}'
+
+    - name: Associate elastic IP with Infoblox instance
+      amazon.aws.ec2_eip:
+        region: "{{ vnios_aws_region }}"
+        device_id: '{{ _eni_ids | last }}'
+        in_vpc: true
+        tags:
+          Name: Infoblox vNIOS LAN1
+        reuse_existing_ip_allowed: true
+        state: present
+      register: _eip
+
+...
