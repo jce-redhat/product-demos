@@ -27,10 +27,11 @@ This outputs a `javascript:` URL. Copy the entire output, then create a bookmark
 
 #### Chrome
 
-1. Open the Bookmark Manager (`Ctrl+Shift+O` / `Cmd+Shift+O`).
-2. Click the three-dot menu in the top right and select **Add new bookmark**.
+1. If the Bookmarks Bar is hidden, open with `Ctrl+Shift+B` / `Cmd+Shift+B`.
+2. Right-click on the Bookmarks Bar and choose **Add Page...**
 3. Set the name (e.g. "Import APD Domains") and paste the `javascript:` URL into the URL field.
-4. Click **Save**.
+4. Choose the Destination (default adds to main Bookmarks Bar).
+5. Click **Save**.
 
 ### Importing domains into a new AAP instance
 
