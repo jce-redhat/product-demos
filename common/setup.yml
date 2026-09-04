@@ -51,7 +51,7 @@ controller_inventory_sources:
         - tag:Name
       compose:
         ansible_host: public_ip_address
-        ansible_user: ec2-user
+        ansible_user: "'ec2-user'"
         # ansible-core 2.16 requires Python 3.8+ on targets; RHEL 8 needs python3.9.
         ansible_python_interpreter: >-
           '/usr/bin/python3.9' if tags.get('blueprint', '') == 'rhel8'
@@ -77,10 +77,6 @@ controller_inventory_sources:
           separator: ''
 
 controller_groups:
-  - name: cloud_aws
-    inventory: Ansible Product Demos Inventory
-    variables:
-      ansible_user: ec2-user
   - name: os_windows
     inventory: Ansible Product Demos Inventory
     variables:
