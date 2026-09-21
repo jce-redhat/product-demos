@@ -80,16 +80,17 @@ controller_inventory_sources:
 controller_groups:
   - name: os_linux
     inventory: Ansible Product Demos Inventory
+    children:
+      - "aws_linux"
+      - "aws_rhel"
   - name: aws_rhel
     inventory: Ansible Product Demos Inventory
-    parents:
-      - "os_linux"
   - name: aws_linux
     inventory: Ansible Product Demos Inventory
-    parents:
-      - "os_linux"
   - name: os_windows
     inventory: Ansible Product Demos Inventory
+    children:
+      - "aws_windows"
     variables:
       ansible_connection: winrm
       ansible_winrm_transport: credssp
@@ -97,8 +98,6 @@ controller_groups:
       ansible_port: 5986
   - name: aws_windows
     inventory: Ansible Product Demos Inventory
-    parents:
-      - "os_windows"
   - name: domain_ansible_local
     inventory: Ansible Product Demos Inventory
     variables:
