@@ -58,9 +58,10 @@ controller_inventory_sources:
           else omit
         ansible_winrm_kerberos_hostname_override: tags.Name + '.ansible.local' if platform_details == 'Windows' else omit
       groups:
+        aws_rhel: "'Red Hat Enterprise Linux' in platform_details"
+        aws_linux: "'Linux' in platform_details"
+        aws_windows: "'Windows' in platform_details"
         cloud_aws: true
-        os_linux: "platform_details == 'Red Hat Enterprise Linux'"
-        os_windows: "platform_details == 'Windows'"
 
       keyed_groups:
         - key: tags.blueprint
@@ -77,6 +78,16 @@ controller_inventory_sources:
           separator: ''
 
 controller_groups:
+  - name: os_linux
+    inventory: Ansible Product Demos Inventory
+  - name: aws_rhel
+    inventory: Ansible Product Demos Inventory
+    parents:
+      - "os_linux"
+  - name: aws_linux
+    inventory: Ansible Product Demos Inventory
+    parents:
+      - "os_linux"
   - name: os_windows
     inventory: Ansible Product Demos Inventory
     variables:
@@ -84,6 +95,10 @@ controller_groups:
       ansible_winrm_transport: credssp
       ansible_winrm_server_cert_validation: ignore
       ansible_port: 5986
+  - name: aws_windows
+    inventory: Ansible Product Demos Inventory
+    parents:
+      - "os_windows"
   - name: domain_ansible_local
     inventory: Ansible Product Demos Inventory
     variables:
